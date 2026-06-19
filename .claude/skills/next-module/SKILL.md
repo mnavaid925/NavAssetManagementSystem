@@ -1,11 +1,11 @@
 ---
 name: next-module
-description: Scaffold and build the NEXT Sales Management System module end-to-end (Modules 1–20 from SalesManagementSystem.md) — a Django app under apps/<slug> with tenant-scoped models, full CRUD views/forms/urls/admin, Tailwind+HTMX templates, an idempotent seeder, navigation wiring, and migrations — following the Module 0 (apps/tenants) reference patterns. Use when the user says "new", "next", "new module", "next module", "build the next module", "create the next module", "continue the modules", "scaffold the next module", or invokes /next-module. Optional argument: a specific module number 1–20 (e.g. "/next-module 3") or a module name; with no argument, auto-detect the lowest-numbered module not yet built.
+description: Scaffold and build the NEXT Asset Management System module end-to-end (Modules 1–20 from AssetManagementSystem.md) — a Django app under apps/<slug> with tenant-scoped models, full CRUD views/forms/urls/admin, Tailwind+HTMX templates, an idempotent seeder, navigation wiring, and migrations — following the Module 0 (apps/tenants) reference patterns. Use when the user says "new", "next", "new module", "next module", "build the next module", "create the next module", "continue the modules", "scaffold the next module", or invokes /next-module. Optional argument: a specific module number 1–20 (e.g. "/next-module 3") or a module name; with no argument, auto-detect the lowest-numbered module not yet built.
 ---
 
-# next-module — Sales Management System module builder
+# next-module — Asset Management System module builder
 
-When this skill is invoked, you build **one complete Sales Management System module** end-to-end, matching the conventions
+When this skill is invoked, you build **one complete Asset Management System module** end-to-end, matching the conventions
 already established in the codebase. Module 0 (**Tenant & Subscription Management**, the `apps/tenants` app)
 is the **canonical reference implementation** — read it whenever you are unsure how something should look.
 
@@ -21,14 +21,14 @@ is the **canonical reference implementation** — read it whenever you are unsur
 
 ---
 
-## Project conventions (the real, as-built Sales Management System)
+## Project conventions (the real, as-built Asset Management System)
 
 > ⚠️ The `dump-module` / `manual-test` skill examples in this repo were copied from an earlier project and
 > describe a different domain (and stale patterns like Bootstrap / class-based mixins / wrong credentials).
 > **Ignore their domain and patterns.** The live app — and the real credentials (`password123`) — is the one below.
 
 - **Stack:** Django 5.1, **function-based views** with `@login_required`, **Tailwind CSS (Play CDN) + HTMX +
-  Chart.js + Lucide**, MySQL/MariaDB (XAMPP) via PyMySQL. DB is **`nav_sms`** (XAMPP MariaDB 10.4 version shim
+  Chart.js + Lucide**, MySQL/MariaDB (XAMPP) via PyMySQL. DB is **`nav_ams`** (XAMPP MariaDB 10.4 version shim
   lives in `config/__init__.py`). Run Python through the venv: `venv\Scripts\python.exe manage.py ...`
   (PowerShell) — Django is not on system Python. Tests run under `config.settings_test` (SQLite in-memory) with
   pytest + pytest-django.
@@ -70,22 +70,22 @@ per-tenant auto-numbering (`INV-00001`), `EncryptionKey.generate_secret()` / `.m
 1. **If the user passed an argument, resolve it to exactly one module** (the argument may be a number, a name,
    a keyword, or an app slug — all are accepted, case-insensitive, punctuation/`&`/`and` ignored):
    - **Number** — `1`–`20` (also `01`, `#3`, `module 5`) → that module.
-   - **App slug** — a value from the table below (e.g. `leads`, `opportunities`, `forecasting`) → that module.
+   - **App slug** — a value from the table below (e.g. `procurement`, `inventory`, `maintenance`) → that module.
    - **Full or partial module name** — match against the `MODULE_CATALOG` names in `apps/core/navigation.py`
-     (e.g. `Lead Management`, `lead`, `opportunity pipeline`, `forecasting`, `quote proposal`). Do a
+     (e.g. `Asset Procurement`, `procurement`, `inventory tracking`, `maintenance`, `depreciation`). Do a
      case-insensitive substring/keyword match on the module name **and** its app slug.
-   - **Sub-module name** — if the text matches a sub-module (e.g. `Lead Scoring`, `Pipeline Forecasting`, `CPQ`),
+   - **Sub-module name** — if the text matches a sub-module (e.g. `Purchase Order`, `Physical Verification`, `Work Order`),
      build that sub-module's parent module.
    - If the text matches **more than one** module (ambiguous) → ask the user to pick via `AskUserQuestion`
      (list the candidate modules). If it matches **none** → tell the user and show the module table.
    - If the resolved module's app already exists under `apps/`, say so and ask whether to extend it or pick another.
 
-   Examples: `/next-module 5`, `/next-module leads`, `/next-module "Lead Management"`,
-   `/next-module lead`, `"build the Opportunity module"`, `"create Sales Forecasting"` all resolve to one module.
+   Examples: `/next-module 5`, `/next-module procurement`, `/next-module "Asset Procurement & Acquisition"`,
+   `/next-module purchase`, `"build the Inventory module"`, `"create Maintenance Management"` all resolve to one module.
 
 2. **If no argument**, **auto-detect the next module**: the lowest `N` in `1..20` whose app slug (table below)
    does NOT yet exist under `apps/`. (Module 0 = `apps/tenants` is already built, so the first run targets
-   **Module 1 = `leads`**.) Confirm by checking the directory and by reading `apps/core/navigation.py` `LIVE_LINKS`.
+   **Module 1 = `procurement`**.) Confirm by checking the directory and by reading `apps/core/navigation.py` `LIVE_LINKS`.
 3. State which module you're building and proceed (enter plan mode per CLAUDE.md, present the short model/page
    spec for the 5 sub-modules, then build — lean toward building, don't over-deliberate).
 
@@ -93,29 +93,29 @@ per-tenant auto-numbering (`INV-00001`), `EncryptionKey.generate_secret()` / `.m
 
 | # | Module name | app slug | Suggested tenant-scoped models (adapt as needed) |
 |---|---|---|---|
-| 1 | Lead Management | `leads` | Lead, LeadSource, LeadScore, NurtureCampaign, LeadConversion |
-| 2 | Opportunity & Pipeline Management | `opportunities` | Opportunity, PipelineStage, OpportunityActivity, Competitor, DealCollaborator |
-| 3 | Contact & Account Management | `crm` | Account, Contact, RelationshipMap, AccountTier, AccountPlan |
-| 4 | Sales Forecasting | `forecasting` | ForecastCategory, Forecast, Quota, ForecastAdjustment, ForecastAccuracy |
-| 5 | Quote & Proposal Management | `quotes` | Quote, QuoteLineItem, PricingRule, Proposal, QuoteVersion |
-| 6 | Order Management | `orders` | Order, OrderLine, Fulfillment, OrderAmendment, RevenueSchedule |
-| 7 | Territory & Quota Management | `territories` | Territory, TerritoryAssignment, QuotaPlan, CoverageModel, TerritoryPerformance |
-| 8 | Sales Activity & Task Management | `activities` | Activity, SalesTask, Meeting, EmailLog, SalesPlan |
-| 9 | Sales Enablement | `enablement` | ContentAsset, Playbook, TrainingRecord, CallRecording, CompetitiveCard |
-| 10 | Incentive Compensation Management | `compensation` | CommissionPlan, Earning, Clawback, GlobalPlanVariation, Payout |
-| 11 | Customer Success & Account Management | `success` | HealthScore, Renewal, OnboardingPlan, Advocacy, QBR |
-| 12 | Sales Analytics & Intelligence | `analytics` | WinLossAnalysis, SalesVelocity, ConversionFunnel, RepScorecard, Benchmark |
-| 13 | Marketing Alignment & Attribution | `marketing` | CampaignInfluence, MQLHandoff, CampaignPerformance, ContentEngagement, MarketingEvent |
-| 14 | Partner & Channel Management | `partners` | Partner, DealRegistration, PartnerCollateral, PartnerPerformance, ChannelConflict |
-| 15 | Contract & Subscription Management | `contracts` | Contract, ContractClause, RenewalSchedule, UsageRecord, ContractObligation |
-| 16 | Mobile Sales | `mobile` | MobileDevice, FieldVisit, MobileQuote, CallActivity, MobileAlert |
-| 17 | Workflow & Process Automation | `automation` | ProcessFlow, AssignmentRule, ApprovalWorkflow, AlertRule, EnrichmentRule |
-| 18 | Integration & API Hub | `integrations` | Connector, SyncJob, SyncLog, Webhook, ApiKey |
-| 19 | Master Data & Configuration | `masterdata` | ProductCatalog, CustomField, MethodologyConfig, PriceBook, LocalizationSetting |
-| 20 | System Administration & Security | `administration` | SecurityPolicy, DataPrivacyRule, ComplianceItem, BackupJob, SystemHealthMetric |
+| 1 | Asset Procurement & Acquisition | `procurement` | PurchaseRequisition, RequisitionApproval, VendorRFQ, PurchaseOrder, GoodsReceipt |
+| 2 | Asset Inventory & Tracking | `inventory` | Asset, AssetLocation, MovementLog, CheckInOutRecord, AssetAudit |
+| 3 | Asset Classification & Categorization | `classification` | AssetCategory, AssetType, AssetModel, CriticalityRating, CustomAttribute |
+| 4 | Depreciation & Financial Management | `depreciation` | DepreciationSchedule, AssetValuation, CostAllocation, CapitalizationRule, FixedAssetEntry |
+| 5 | Maintenance & Repair Management | `maintenance` | MaintenancePlan, WorkOrder, SparePart, MaintenanceLog, ServiceContract |
+| 6 | Asset Performance & Utilization | `performance` | UptimeRecord, OEEMetric, UtilizationLog, EnergyReading, PerformanceKPI |
+| 7 | Asset Reliability & Condition Monitoring | `reliability` | ConditionInspection, PredictiveReading, FMEAEntry, CalibrationRecord, ReliabilityStrategy |
+| 8 | Warranty & Insurance Management | `warranty` | Warranty, WarrantyClaim, InsurancePolicy, InsuranceClaim, ExtendedContract |
+| 9 | Asset Disposal & Retirement | `disposal` | DisposalRequest, AssetResale, TradeIn, SalvageRecord, DisposalCertificate |
+| 10 | Lease & Rental Management | `leasing` | LeaseContract, LeaseClassification, LeasePayment, LeaseModification, LeaseAnalysis |
+| 11 | Compliance & Regulatory Management | `compliance` | RegulatoryStandard, ComplianceAudit, SafetyInspection, LicensePermit, ViolationRecord |
+| 12 | Asset Risk Management | `risk` | RiskRegister, ContinuityPlan, CyberControl, SupplyChainRisk, MitigationPlan |
+| 13 | Mobile Asset Management | `mobile` | MobileInspection, FieldWorkOrder, ScanEvent, GeofenceAlert, SyncRecord |
+| 14 | Asset Analytics & Business Intelligence | `analytics` | LifecycleCost, ReplacementForecast, PortfolioDashboard, ScenarioModel, ExecutiveKPI |
+| 15 | Integration & API Hub | `integrations` | Connector, SyncJob, SyncLog, Webhook, ApiKey |
+| 16 | Document & Knowledge Management | `documents` | AssetDocument, DocumentVersion, StandardProcedure, TrainingRecord, KnowledgeArticle |
+| 17 | Space & Facility Asset Management | `facilities` | FloorPlan, BuildingSystem, FixtureAsset, InfrastructureAsset, OccupancyAllocation |
+| 18 | IT Asset Management (ITAM) | `itam` | HardwareAsset, SoftwareLicense, CloudSubscription, ConfigurationItem, RefreshCycle |
+| 19 | Fleet & Vehicle Management | `fleet` | Vehicle, FuelLog, DriverAssignment, VehicleService, TelematicsRecord |
+| 20 | System Administration & Security | `administration` | SecurityPolicy, AuditTrailRule, EncryptionSetting, BackupJob, SystemHealthMetric |
 
 Aim for **3–6 models** per module so each of the 5 sub-modules maps to a real list page (or a logical page).
-For Modules 19 & 20, some sub-modules already have live pages (`accounts:role_list`, `accounts:user_list`,
+For Module 20, some sub-modules already have live pages (`accounts:role_list`, `accounts:user_list`,
 `core:audit_log`) — keep those mappings and only build the missing pieces.
 
 ---
@@ -130,8 +130,8 @@ You may also build it inline if it's quick. Either way produce ALL of the follow
 - `apps.py` (`name='apps.<slug>'`, `verbose_name`), `__init__.py`.
 - `models.py` — the 3–6 models above. Each: `tenant` FK, timestamps (mirror `apps/tenants` base or add
   `created_at/updated_at`), `STATUS_CHOICES` class attrs where relevant, `__str__`, `class Meta: ordering`.
-  Where a sales model belongs to a parent sales object, FK it **by string** (e.g.
-  `models.ForeignKey('opportunities.Opportunity', ...)`) **once that module exists**; otherwise tenant-scope the
+  Where an asset model belongs to a parent asset object, FK it **by string** (e.g.
+  `models.ForeignKey('inventory.Asset', ...)`) **once that module exists**; otherwise tenant-scope the
   model only. Auto-number in `save()` or the view with an existence guard.
 - `forms.py` — ModelForms; **exclude** `tenant` and auto-`number` (set them in the view).
 - `views.py` — function-based, `@login_required`, tenant-scoped, full CRUD + search + filters + pagination
@@ -202,7 +202,7 @@ If the user says "next" again after a module is done, repeat Step 1 (auto-detect
 unbuilt module) and build that one. Keep going module by module on request.
 
 ## Quality bar
-A delivered module must: migrate cleanly to `nav_sms`; seed idempotently; pass `manage.py check`; have every
+A delivered module must: migrate cleanly to `nav_ams`; seed idempotently; pass `manage.py check`; have every
 list page rendering 200 with working search/filters/pagination + Actions; appear as **Live** in the sidebar for
 all 5 sub-modules; match the blue/white Tailwind design system; and isolate data per tenant. Would a staff
 engineer approve it? If a piece feels hacky, redo it the elegant way before presenting.
