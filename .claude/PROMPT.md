@@ -1,6 +1,6 @@
 
 
-1) I want to create "Sales Management System" application in Django as backend and Tailwind CSS + HTMX as frontend.
+1) I want to create "Asset Management System" application in Django as backend and Tailwind CSS + HTMX as frontend.
 2) Create a Clean, Intuitive and Fully Responsive Unique Dashboard Design with blue and white theme.
 3) I need multi tenant application.
 4) Please create login, registration and forgot page.
@@ -9,8 +9,8 @@
 7) Please add fake data via seeders.
 8) Create .env file for database connection via MySQL Xampp.
 9) Always update the README.md file
-10) Please review SalesManagementSystem.md for future planning.
-11) Design should be as attached image. The sidebar menu should be as SalesManagementSystem.md file modules and sub modules.
+10) Please review AssetManagementSystem.md for future planning.
+11) Design should be as attached image. The sidebar menu should be as AssetManagementSystem.md file modules and sub modules.
 
 
 Dashboard Requirements:
@@ -37,9 +37,9 @@ Browser Compatibility:
 -    And other WebKit browsers
 
 
-SMS Application Requirements:
+AMS Application Requirements:
 
-I have multiple modules in my SMS application. Below I am giving my first module.
+I have multiple modules in my AMS application. Below I am giving my first module.
 
 
 ## 0. Tenant & Subscription Management
