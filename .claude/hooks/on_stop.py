@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Stop hook — end-of-turn verification for NavSalesManagementSystem.
+"""Stop hook — end-of-turn verification for NavAssetManagementSystem.
 
 Runs when Claude finishes a turn:
   1. Always: Django `manage.py check`.
@@ -66,7 +66,7 @@ def main():
             # pytest.ini -> config.settings_test) — NOT the MySQL dev settings this hook set on
             # os.environ for the `check` above. Without this override the pytest subprocess
             # inherits DJANGO_SETTINGS_MODULE=config.settings and runs against the shared MySQL
-            # `test_nav_sms` DB: slow, MariaDB-10.4-fragile, and prone to collisions/half-migrated
+            # `test_nav_ams` DB: slow, MariaDB-10.4-fragile, and prone to collisions/half-migrated
             # state when another session's suite runs concurrently.
             test_env = dict(os.environ)
             test_env["DJANGO_SETTINGS_MODULE"] = "config.settings_test"
@@ -89,7 +89,7 @@ def main():
                          + "\nFix the above before finishing.\n")
         return 2
 
-    note = "NavSalesManagementSystem verify - manage.py check OK" + (" - tests OK" if real_tests else " - no test suite yet")
+    note = "NavAssetManagementSystem verify - manage.py check OK" + (" - tests OK" if real_tests else " - no test suite yet")
     print(json.dumps({"systemMessage": note, "suppressOutput": True}))
     return 0
 
