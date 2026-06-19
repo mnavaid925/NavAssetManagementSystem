@@ -1,17 +1,17 @@
 ---
 name: dump-module
-description: Regenerate the consolidated <NN>_<slug>.txt code dump for one (or all) NavSalesManagementSystem modules into the temp/ folder. The .txt file contains every backend file from apps/<name>/ followed by every frontend template from templates/<name>/, with per-file separators. Use when the user says "dump module X", "regenerate the temp file for X", "extract code for module X", "give me a code dump of X", or invokes /dump-module. The user can pass a module number (0-20), an app folder name (tenants/accounts/core/dashboard plus the roadmap slugs like leads/opportunities/quotes), a friendly name (e.g. "subscription", "lead", "pipeline", "forecast"), or "all" to regenerate every module.
+description: Regenerate the consolidated <NN>_<slug>.txt code dump for one (or all) NavAssetManagementSystem modules into the temp/ folder. The .txt file contains every backend file from apps/<name>/ followed by every frontend template from templates/<name>/, with per-file separators. Use when the user says "dump module X", "regenerate the temp file for X", "extract code for module X", "give me a code dump of X", or invokes /dump-module. The user can pass a module number (0-20), an app folder name (tenants/accounts/core/dashboard plus the roadmap slugs like procurement/inventory/maintenance), a friendly name (e.g. "asset", "purchase", "workorder", "depreciation"), or "all" to regenerate every module.
 ---
 
-# dump-module — NavSalesManagementSystem module code-dump generator
+# dump-module — NavAssetManagementSystem module code-dump generator
 
 This skill regenerates one (or all) of the consolidated `temp\<NN>_<slug>.txt` files that contain a single module's complete backend + frontend source code, for use in code review, hand-off, AI prompts, or archival.
 
-NavSalesManagementSystem is a multi-tenant **Sales Management System** (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide, MySQL/MariaDB via PyMySQL, DB `nav_sms`). Built today: **Module 0 = `apps/tenants`** (Tenant & Subscription Management — the flagship complete module) plus the foundation apps **`accounts` / `core` / `dashboard`**. Modules **1–20** from `SalesManagementSystem.md` are sidebar roadmap placeholders built on demand by the **`/next-module`** skill — until each is built, dumping it produces only a header and a "(no backend folder found ...)" note, which is expected.
+NavAssetManagementSystem is a multi-tenant **Asset Management System** (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide, MySQL/MariaDB via PyMySQL, DB `nav_ams`). Built today: **Module 0 = `apps/tenants`** (Tenant & Subscription Management — the flagship complete module) plus the foundation apps **`accounts` / `core` / `dashboard`**. Modules **1–20** from `AssetManagementSystem.md` are sidebar roadmap placeholders built on demand by the **`/next-module`** skill — until each is built, dumping it produces only a header and a "(no backend folder found ...)" note, which is expected.
 
 ## When to use
 
-- User says: "dump module X", "regenerate temp file for X", "extract module X code", "give me the .txt for X", "refresh the tenants module dump", "dump the leads app", "rebuild all module dumps"
+- User says: "dump module X", "regenerate temp file for X", "extract module X code", "give me the .txt for X", "refresh the tenants module dump", "dump the procurement app", "rebuild all module dumps"
 - User invokes `/dump-module` (with or without an argument)
 - User explicitly references the `temp/` folder code dumps
 
@@ -30,8 +30,8 @@ The skill takes ONE positional argument — the module identifier. Accepted form
 | Form                | Examples                                     |
 |---------------------|----------------------------------------------|
 | Module number       | `0`, `5`, `13`, `00`, `05`                   |
-| App folder name     | `tenants`, `accounts`, `core`, `dashboard` (built); `leads`, `opportunities`, `crm`, `forecasting`, `quotes`, `orders`, `territories`, `activities`, `enablement`, `compensation`, `success`, `analytics`, `marketing`, `partners`, `contracts`, `mobile`, `automation`, `integrations`, `masterdata`, `administration` (roadmap) |
-| Friendly keyword    | `subscription`, `users`, `lead`, `pipeline`, `deal`, `contact`, `forecast`, `quote`, `commission`, `renewal` |
+| App folder name     | `tenants`, `accounts`, `core`, `dashboard` (built); `procurement`, `inventory`, `classification`, `depreciation`, `maintenance`, `performance`, `reliability`, `warranty`, `disposal`, `leasing`, `compliance`, `risk`, `mobile`, `analytics`, `integrations`, `documents`, `facilities`, `itam`, `fleet`, `administration` (roadmap) |
+| Friendly keyword    | `subscription`, `users`, `asset`, `purchase`, `workorder`, `depreciation`, `warranty`, `lease`, `vehicle`, `compliance` |
 | Bulk                | `all` (or `*`) — regenerates every registry entry |
 
 If the user does NOT specify a module, ask them which one (single-select) before running the script — do not guess. Default to **tenants** (Module 0, the complete flagship) if they say "the module" with no name; **tenants** is also the richest CRUD surface (OnboardingStep/Subscription/Invoice/EncryptionKey/BrandingSetting/HealthMetric).
@@ -49,12 +49,12 @@ Examples:
 ```
 & '.claude\skills\dump-module\dump_module.ps1' -Module tenants
 & '.claude\skills\dump-module\dump_module.ps1' -Module 0
-& '.claude\skills\dump-module\dump_module.ps1' -Module leads
+& '.claude\skills\dump-module\dump_module.ps1' -Module procurement
 & '.claude\skills\dump-module\dump_module.ps1' -Module all
 ```
 
 Notes:
-- The script's `$RepoRoot` defaults to `C:\xampp\htdocs\NavSalesManagementSystem`.
+- The script's `$RepoRoot` defaults to `C:\xampp\htdocs\NavAssetManagementSystem`.
 - The script auto-creates `temp/` if missing.
 - The script overwrites the matching `<NN>_<slug>.txt` file (idempotent — safe to re-run).
 - `temp/` should be gitignored — no commit snippet needed for the generated `.txt`.
@@ -97,7 +97,7 @@ If a module's `apps\<name>\` or `templates\<name>\` folder does not exist yet (a
 
 ## Module registry (kept in `dump_module.ps1`)
 
-Module numbers follow `SalesManagementSystem.md` (Modules 0–20). **Module 0** (Tenant & Subscription Management → `apps/tenants`) is COMPLETE, alongside the foundation apps. **Modules 1–20** are forward-compatible registry rows that map to the `/next-module` roadmap app slugs; their folders are created only when `/next-module` builds them.
+Module numbers follow `AssetManagementSystem.md` (Modules 0–20). **Module 0** (Tenant & Subscription Management → `apps/tenants`) is COMPLETE, alongside the foundation apps. **Modules 1–20** are forward-compatible registry rows that map to the `/next-module` roadmap app slugs; their folders are created only when `/next-module` builds them.
 
 | # | Slug                | apps\            | templates\       | Status |
 |---|---------------------|------------------|------------------|--------|
@@ -105,25 +105,25 @@ Module numbers follow `SalesManagementSystem.md` (Modules 0–20). **Module 0** 
 | — | `accounts`          | `accounts`       | `accounts`       | Built (foundation: users/roles/auth) |
 | — | `core`              | `core`           | `core`           | Built (foundation: tenant/audit/navigation) |
 | — | `dashboard`         | `dashboard`      | `dashboard`      | Built (foundation: KPI aggregation) |
-| 1 | `01_leads`          | `leads`          | `leads`          | Roadmap |
-| 2 | `02_opportunities`  | `opportunities`  | `opportunities`  | Roadmap |
-| 3 | `03_crm`            | `crm`            | `crm`            | Roadmap |
-| 4 | `04_forecasting`    | `forecasting`    | `forecasting`    | Roadmap |
-| 5 | `05_quotes`         | `quotes`         | `quotes`         | Roadmap |
-| 6 | `06_orders`         | `orders`         | `orders`         | Roadmap |
-| 7 | `07_territories`    | `territories`    | `territories`    | Roadmap |
-| 8 | `08_activities`     | `activities`     | `activities`     | Roadmap |
-| 9 | `09_enablement`     | `enablement`     | `enablement`     | Roadmap |
-| 10 | `10_compensation`  | `compensation`   | `compensation`   | Roadmap |
-| 11 | `11_success`       | `success`        | `success`        | Roadmap |
-| 12 | `12_analytics`     | `analytics`      | `analytics`      | Roadmap |
-| 13 | `13_marketing`     | `marketing`      | `marketing`      | Roadmap |
-| 14 | `14_partners`      | `partners`       | `partners`       | Roadmap |
-| 15 | `15_contracts`     | `contracts`      | `contracts`      | Roadmap |
-| 16 | `16_mobile`        | `mobile`         | `mobile`         | Roadmap |
-| 17 | `17_automation`    | `automation`     | `automation`     | Roadmap |
-| 18 | `18_integrations`  | `integrations`   | `integrations`   | Roadmap |
-| 19 | `19_masterdata`    | `masterdata`     | `masterdata`     | Roadmap |
+| 1 | `01_procurement`    | `procurement`    | `procurement`    | Roadmap |
+| 2 | `02_inventory`      | `inventory`      | `inventory`      | Roadmap |
+| 3 | `03_classification` | `classification` | `classification` | Roadmap |
+| 4 | `04_depreciation`   | `depreciation`   | `depreciation`   | Roadmap |
+| 5 | `05_maintenance`    | `maintenance`    | `maintenance`    | Roadmap |
+| 6 | `06_performance`    | `performance`    | `performance`    | Roadmap |
+| 7 | `07_reliability`    | `reliability`    | `reliability`    | Roadmap |
+| 8 | `08_warranty`       | `warranty`       | `warranty`       | Roadmap |
+| 9 | `09_disposal`       | `disposal`       | `disposal`       | Roadmap |
+| 10 | `10_leasing`       | `leasing`        | `leasing`        | Roadmap |
+| 11 | `11_compliance`    | `compliance`     | `compliance`     | Roadmap |
+| 12 | `12_risk`          | `risk`           | `risk`           | Roadmap |
+| 13 | `13_mobile`        | `mobile`         | `mobile`         | Roadmap |
+| 14 | `14_analytics`     | `analytics`      | `analytics`      | Roadmap |
+| 15 | `15_integrations`  | `integrations`   | `integrations`   | Roadmap |
+| 16 | `16_documents`     | `documents`      | `documents`      | Roadmap |
+| 17 | `17_facilities`    | `facilities`     | `facilities`     | Roadmap |
+| 18 | `18_itam`          | `itam`           | `itam`           | Roadmap |
+| 19 | `19_fleet`         | `fleet`          | `fleet`          | Roadmap |
 | 20 | `20_administration`| `administration` | `administration` | Roadmap |
 
 When `/next-module` builds one of the roadmap modules, the registry already covers it — no edit needed. If a NEW app/slug is added that is not in this table, append a row to the `$registry` and `$aliases` blocks in `dump_module.ps1`. The roadmap slugs above must stay in sync with the `Module → app-slug` table in `.claude/skills/next-module/SKILL.md`.
