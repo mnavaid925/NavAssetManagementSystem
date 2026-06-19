@@ -25,9 +25,9 @@ The deliverable is a **runnable click-through script**, not an automation strate
 
 ---
 
-## Project at a glance — Sales Management System
+## Project at a glance — Asset Management System
 
-The Sales Management System is a multi-tenant Django 5.1 sales CRM (Tailwind CSS via Play CDN + HTMX + Chart.js + Lucide icons; MySQL/MariaDB via PyMySQL, DB `nav_sms`). The apps that ship today live under [apps/](apps/):
+The Asset Management System is a multi-tenant Django 5.1 enterprise asset management platform (Tailwind CSS via Play CDN + HTMX + Chart.js + Lucide icons; MySQL/MariaDB via PyMySQL, DB `nav_ams`). The apps that ship today live under [apps/](apps/):
 
 | App | URL prefix | What it does | Main testable surface |
 |---|---|---|---|
@@ -40,7 +40,7 @@ One surface is worth testing first:
 
 - **tenants** ([apps/tenants/urls.py](apps/tenants/urls.py)) is **Module 0 — Tenant & Subscription Management — the flagship complete module** and the **default target** when the user just says "manually test the module". It is the richest plain-CRUD surface in the app: six entities (OnboardingStep, Subscription, Invoice, EncryptionKey, BrandingSetting, HealthMetric) each with full list/detail/create/edit/delete. Its richest plain-CRUD entity is **Invoice** (auto-numbered `INV-#####`).
 
-Modules 1–20 from [SalesManagementSystem.md](SalesManagementSystem.md) (Lead Management, Opportunity & Pipeline Management, Quote & Proposal Management, Order Management, etc.) are sidebar "roadmap" placeholders (`core:roadmap`) built on demand by the `/next-module` skill; only Module 0 (tenants) ships today.
+Modules 1–20 from [AssetManagementSystem.md](AssetManagementSystem.md) (Asset Procurement & Acquisition, Asset Inventory & Tracking, Maintenance & Repair Management, Depreciation & Financial Management, etc.) are sidebar "roadmap" placeholders (`core:roadmap`) built on demand by the `/next-module` skill; only Module 0 (tenants) ships today.
 
 ---
 
@@ -289,7 +289,7 @@ Prefer **tables over prose** everywhere. Numbered steps inside the Steps cell ar
 
 ---
 
-## NavSalesManagementSystem-specific patterns to bake into every report
+## NavAssetManagementSystem-specific patterns to bake into every report
 
 Every manual test plan MUST account for these project realities:
 
@@ -356,7 +356,7 @@ The delivered manual test plan should be:
 
 - **Executable by a non-developer.** A junior tester (or the user) can follow every step without asking questions.
 - **Concrete.** Every step names a specific button, field, URL, or expected text — no hand-waving.
-- **Project-aware.** Uses real Sales Management System URLs (`/tenant/invoices/...`, `/tenant/subscriptions/...`, `/auth/users/...`, `/auth/login/`), real seeded usernames (`admin_acme`, `admin_globex`, password `password123`), real model field names, real status values (Invoice: `draft`/`sent`/`paid`/`overdue`; Subscription: `trialing`/`active`/`past_due`/`canceled`) — not generic placeholders.
+- **Project-aware.** Uses real Asset Management System URLs (`/tenant/invoices/...`, `/tenant/subscriptions/...`, `/auth/users/...`, `/auth/login/`), real seeded usernames (`admin_acme`, `admin_globex`, password `password123`), real model field names, real status values (Invoice: `draft`/`sent`/`paid`/`overdue`; Subscription: `trialing`/`active`/`past_due`/`canceled`) — not generic placeholders.
 - **Comprehensive within scope.** Covers every mandatory checklist from §Phase 5; explicitly marks any category as N/A with a reason rather than silently omitting.
 - **Verifiable.** Every claim about a UI element points at the template/model/view file:line where it lives.
 - **Tester-friendly.** Pass/Fail/Notes columns are empty for the tester to fill. Bug log template ready to use.
