@@ -1,10 +1,15 @@
 # Lessons
 
+_Engineering lessons carried over from the foundation/reference build (same Django 5.1 + Tailwind/HTMX +
+XAMPP MariaDB stack). They are domain-agnostic patterns; module names in a few older examples (e.g. the
+`compensation` reference, the `automation`/`integrations` clones) are **historical** and only illustrate the
+pattern — apply the underlying rule to the Asset Management modules (`procurement`, `inventory`, `maintenance`, …)._
+
 ## L1 — Verify a database is actually ours (and empty) before migrating
 `CREATE DATABASE IF NOT EXISTS x` is a **silent no-op** when `x` already exists. This XAMPP instance hosts many other
 Nav* databases (e.g. `navpms`, `navaccounting`, `navcrm`) owned by live apps. **Rule:** before pointing `.env` at a DB
 and running migrate, check `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='<db>'` and confirm it's
-empty or ours. Never flush/fake-migrate a non-empty unknown DB. This project uses its own DB **`nav_sms`** (verified
+empty or ours. Never flush/fake-migrate a non-empty unknown DB. This project uses its own DB **`nav_ams`** (verified
 empty before the first migrate).
 
 ## L2 — Django `{# … #}` comments are single-line only
@@ -87,13 +92,13 @@ fetches the new URL. For verification in the preview, a unique page query (`/?_c
 fetch. (Long-term: a `{% static %}`-with-mtime template tag or ManifestStaticFilesStorage auto-versions.)
 
 ## L14 — `.claude/launch.json` runs the dev server with `--noreload` → ALWAYS restart after a build
-The preview server (`launch.json` config `NavSalesManagementSystem`) starts `manage.py runserver --noreload`. `--noreload` means
+The preview server (`launch.json` config `NavAssetManagementSystem`) starts `manage.py runserver --noreload`. `--noreload` means
 **file edits are NEVER picked up** — after building/wiring a module, the running server keeps serving pre-change
 code, so new sub-modules show the "On the roadmap" placeholder and edits look like they "didn't work". This is a
 specific instance of [L6]. **Rule:** after finishing a module build (especially `navigation.py`/`urls.py`/
 `settings.py` wiring), restart the server: find the LISTENING pid on :8000 with **`netstat -ano | Select-String
 ':8000\b'`** (NOT `Get-NetTCPConnection` — it false-negatived a real listener here), `Stop-Process -Id <pid>
--Force`, then `preview_start NavSalesManagementSystem`. Then verify the live page renders (fetch `/initiation/requests/` → contains
+-Force`, then `preview_start NavAssetManagementSystem`. Then verify the live page renders (fetch `/initiation/requests/` → contains
 "Project Requests", not "On the roadmap"). The disk code was already correct — only the stale process was wrong.
 
 ## L13 — Template agents reference utility CSS classes that don't exist
@@ -115,11 +120,11 @@ blocks the turn. These are **pre-existing flakes**, invisible most of the day, s
 model/view-set date. (Two such assertions existed in `apps/tenants/tests`; fixed both.)
 
 ## L17 — A stale/half-created `test_<db>` blocks the whole suite (drop it, don't reuse)
-An interrupted pytest run left `test_nav_sms` existing but without its `django_migrations` table; the next run
-(reuse-db) reused the broken DB → `ProgrammingError: Table 'test_nav_sms.django_migrations' doesn't exist` /
-`(1007, Can't create database 'test_nav_sms'; database exists')` in setUp, failing every test before it ran.
+An interrupted pytest run left `test_nav_ams` existing but without its `django_migrations` table; the next run
+(reuse-db) reused the broken DB → `ProgrammingError: Table 'test_nav_ams.django_migrations' doesn't exist` /
+`(1007, Can't create database 'test_nav_ams'; database exists')` in setUp, failing every test before it ran.
 **Rule:** when pytest errors on the test DB itself (not an assertion), drop it and let pytest recreate clean:
-`& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_sms;"`
+`& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_ams;"`
 (root / no password on this XAMPP). Unrelated to app code — it's an environment reset.
 
 ## L18 — Close every module build with the specialist review agents, not just self-checks
@@ -135,14 +140,14 @@ Separate the wheat from the chaff: fix defects specific to the new module; for f
 the app-wide reference pattern (non-atomic auto-numbering, global-unique numbers, missing `db_index`, filter-label
 `for=`), flag an app-wide pass instead of forking one module out of step with the other ~12.
 
-## L19 — The on_stop hook ran pytest against MySQL (shared test_nav_sms), not the SQLite test settings
-This was the ROOT CAUSE of the recurring "Table 'test_nav_sms.X' doesn't exist" Stop-hook failures (the [L17]
+## L19 — The on_stop hook ran pytest against MySQL (shared test_nav_ams), not the SQLite test settings
+This was the ROOT CAUSE of the recurring "Table 'test_nav_ams.X' doesn't exist" Stop-hook failures (the [L17]
 drop-the-DB step was only a band-aid). `.claude/hooks/on_stop.py` does
 `os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")` for its step-1 `manage.py check`, then spawned
 `pytest` as a subprocess that INHERITED that env var. pytest-django honours the env var over `pytest.ini`, so the
-hook ran the suite under `config.settings` (MySQL `nav_sms` → `test_nav_sms`) instead of the project's
+hook ran the suite under `config.settings` (MySQL `nav_ams` → `test_nav_ams`) instead of the project's
 `pytest.ini` default `config.settings_test` (SQLite `:memory:`). Effects: slow, MariaDB-10.4-fragile, and — when a
-second session ran its suite at the same time — collisions on the shared `test_nav_sms` (half-migrated → missing
+second session ran its suite at the same time — collisions on the shared `test_nav_ams` (half-migrated → missing
 tables). My OWN `venv\Scripts\python.exe -m pytest` runs used `pytest.ini` (SQLite) and always passed, which masked
 it. **Root-cause fix:** pass an explicit `env` to the pytest subprocess with
 `DJANGO_SETTINGS_MODULE=config.settings_test`. Verified end-to-end: `'{}' | python .claude/hooks/on_stop.py` →
@@ -183,7 +188,7 @@ keep them on the model + detail page but OUT of the form. Reserve `DateInput(typ
 `DateField`s. This is the root-cause fix, not swapping in a `datetime-local` widget.
 
 ## L23 — MariaDB 10.4 shim: lowering the version floor is NOT enough — also force RETURNING off (refines L4)
-Bootstrapping NavSalesManagementSystem (Django 5.1 on XAMPP MariaDB 10.4), the shim only set
+Bootstrapping NavAssetManagementSystem (Django 5.1 on XAMPP MariaDB 10.4), the shim only set
 `DatabaseFeatures.minimum_database_version=(10,4)` + a no-op `check_database_version_supported`. `migrate` still
 died on the very first `INSERT … RETURNING django_migrations.id` (`pymysql.err.ProgrammingError 1064`). Root cause:
 because 10.5 is Django 5.1's *minimum* supported MariaDB, the backend no longer version-gates RETURNING — it enables
@@ -191,7 +196,7 @@ it for **any** MariaDB. The old "`mysql_version >= (10,5)`" sub-check is gone, s
 **Rule:** the 10.4 shim in `config/__init__.py` MUST also force the feature flags off explicitly —
 `DatabaseFeatures.can_return_columns_from_insert = False` and `...can_return_rows_from_bulk_insert = False`
 (assigning a plain value overrides the cached_property descriptor). Then migrate runs clean. A half-migrated DB from
-the first failure had tables but an empty `django_migrations`; recover by DROP+CREATE the (fresh, ours) `nav_sms` DB.
+the first failure had tables but an empty `django_migrations`; recover by DROP+CREATE the (fresh, ours) `nav_ams` DB.
 
 ## L24 — Greenfield bootstrap with the auto-verify hook: write ALL backend before config/settings.py
 On an empty repo the `PostToolUse:Edit` hook (`on_edit.py`) does `django.setup()` under `config.settings`; while
@@ -232,7 +237,7 @@ amounts the reference itself exposes (PayoutForm.net_amount, EarningForm.commiss
 app-wide pattern, not a per-module fix — leave them or change app-wide.
 
 ## L27 — Gate Module-0 (tenant administration) writes behind tenant-admin, not just @login_required
-Billing, encryption-key rotation, branding and health writes were initially `@login_required`, so any Sales Rep in
+Billing, encryption-key rotation, branding and health writes were initially `@login_required`, so any standard (non-admin) user in
 the tenant could mutate them. **Rule:** privileged/workspace-config writes use `@tenant_admin_required` (shared in
 `apps/core/decorators.py`); keep list/detail as `@login_required` if read access is fine for all roles. Also: the
 `{{ debug }}` built-in context var needs `INTERNAL_IPS`; to gate template content on DEBUG, expose `settings.DEBUG`
