@@ -101,13 +101,13 @@ git commit -m 'some example changes'.
 * **Never** combine multiple files into a single `git add` / `git commit` pair, **even if they're in the same folder, share a feature, or look like a "set"** (e.g. `list.html` + `form.html` + `detail.html` of the same module).
 * **Wrong** (this is what NOT to do):
   ```
-  git add 'templates/leads/list.html' 'templates/leads/form.html' 'templates/leads/detail.html'; git commit -m 'feat(leads): lead templates'
+  git add 'templates/procurement/list.html' 'templates/procurement/form.html' 'templates/procurement/detail.html'; git commit -m 'feat(procurement): procurement templates'
   ```
 * **Right** — one `git add` + one `git commit` per file, every time:
   ```
-  git add 'templates/leads/list.html'; git commit -m 'feat(leads): lead list template'
-  git add 'templates/leads/form.html'; git commit -m 'feat(leads): lead form template'
-  git add 'templates/leads/detail.html'; git commit -m 'feat(leads): lead detail template with activity CRUD inline'
+  git add 'templates/procurement/list.html'; git commit -m 'feat(procurement): purchase requisition list template'
+  git add 'templates/procurement/form.html'; git commit -m 'feat(procurement): purchase requisition form template'
+  git add 'templates/procurement/detail.html'; git commit -m 'feat(procurement): purchase order detail template with GRN inline'
   ```
 * Each commit message should be specific to that one file's content — don't reuse the same message across multiple commits.
 * If a change spans 30+ files, the snippet block IS 30+ commits. Length is fine — bundling is not.
